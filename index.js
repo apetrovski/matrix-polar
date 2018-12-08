@@ -150,7 +150,11 @@ module.exports = function(app, options) {
               }
               else stableCourse = false;
 
-              if (timediff < maxInterval && engineRunning === false && secondsSinceStore < timeMax - 1){
+              const MPS_PER_KNOT = 1852 / 3600; // meters per second in 1 knot
+              if (timediff < maxInterval && engineRunning === false && secondsSinceStore < timeMax - 1 &&
+	         2*MPS_PER_KNOT <= navigationSpeedThroughWater && 
+		 ((environmentWindSpeedApparent % 5) <= 0.2 || (environmentWindSpeedApparent % 5) >= 4.8))
+	      {
                 //debug("sailing")
 
                 if (secondsSincePush < timeMax - 1){
