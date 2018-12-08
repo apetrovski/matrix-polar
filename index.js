@@ -420,8 +420,8 @@ registerWithRouter: function(router) {
     db.all(`SELECT environmentWindAngleTrueGround AS angle,
       MAX(navigationSpeedThroughWater) AS speed
       FROM ${table}
-      WHERE environmentWindSpeedTrue < ?
-      AND  environmentWindSpeedTrue > ?
+      WHERE environmentWindSpeedApparent < ?
+      AND  environmentWindSpeedApparent > ?
       GROUP BY environmentWindAngleTrueGround
       ORDER BY ABS(environmentWindAngleTrueGround)`, windspeed, windspeed - interval, function(err, rows){
 
@@ -453,7 +453,7 @@ registerWithRouter: function(router) {
     var table = req.query.table
 
     db.serialize(function () {
-      db.all(`SELECT DISTINCT round(environmentWindSpeedTrue,1) as windSpeed FROM ${table} ORDER BY windSpeed ASC`, function (err, tables) {
+      db.all(`SELECT DISTINCT round(environmentWindSpeedApparent,1) as windSpeed FROM ${table} ORDER BY windSpeed ASC`, function (err, tables) {
         // error will be an Error if one occurred during the query
         if(err){
           debug("registerWithRouter error: " + err.message);
@@ -487,8 +487,8 @@ function getTarget(app, trueWindSpeed, windInterval, trueWindAngle, twaInterval,
   //debug("getTarget called")
 
   db.get(`SELECT * FROM polar
-    WHERE environmentWindSpeedTrue < ?
-    AND environmentWindSpeedTrue > ?
+    WHERE environmentWindSpeedApparent < ?
+    AND environmentWindSpeedApparent > ?
     ORDER BY performanceVelocityMadeGood
     DESC`, trueWindSpeed, trueWindSpeed - windInterval, function(err, row){
       // error will be an Error if one occurred during the query
@@ -512,8 +512,8 @@ function getTarget(app, trueWindSpeed, windInterval, trueWindAngle, twaInterval,
   );
 
   db.get(`SELECT * FROM polar
-    WHERE environmentWindSpeedTrue < ?
-    AND environmentWindSpeedTrue > ?
+    WHERE environmentWindSpeedApparent < ?
+    AND environmentWindSpeedApparent > ?
     ORDER BY performanceVelocityMadeGood
     ASC`, trueWindSpeed, trueWindSpeed - windInterval, function(err, row){
 
@@ -540,7 +540,7 @@ function getTarget(app, trueWindSpeed, windInterval, trueWindAngle, twaInterval,
 
 
   db.get(`SELECT * FROM polar
-    WHERE environmentWindSpeedTrue < ?
+    WHERE environmentWindSpeedApparent < ?
     AND ABS(environmentWindAngleTrueGround) < ?
     AND ABS(environmentWindAngleTrueGround) > ?
     ORDER BY navigationSpeedThroughWater
