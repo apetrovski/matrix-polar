@@ -417,13 +417,13 @@ registerWithRouter: function(router) {
     var interval = parseFloat(req.query.interval);
     var table = req.query.table?req.query.table:"polar" //"polar" is default db
 
-    db.all(`SELECT environmentWindAngleTrueGround AS angle,
+    db.all(`SELECT environmentWindAngleApparent AS angle,
       MAX(navigationSpeedThroughWater) AS speed
       FROM ${table}
       WHERE environmentWindSpeedApparent < ?
       AND  environmentWindSpeedApparent > ?
-      GROUP BY environmentWindAngleTrueGround
-      ORDER BY ABS(environmentWindAngleTrueGround)`, windspeed + interval, windspeed - interval, function(err, rows){
+      GROUP BY environmentWindAngleApparent
+      ORDER BY ABS(environmentWindAngleApparent)`, windspeed + interval, windspeed - interval, function(err, rows){
 
         // error will be an Error if one occurred during the query
         if(err){
