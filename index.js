@@ -413,8 +413,8 @@ registerWithRouter: function(router) {
   router.get('/polarTable', (req, res) => {
     res.contentType('application/json');
     //debug(util.inspect(req.query)); // http://localhost:3000/plugins/signalk-polar/polarTable/?windspeed=4&interval=0.1
-    var windspeed = req.query.windspeed;
-    var interval = req.query.interval;
+    var windspeed = parseFloat(req.query.windspeed);
+    var interval = parseFloat(req.query.interval);
     var table = req.query.table?req.query.table:"polar" //"polar" is default db
 
     db.all(`SELECT environmentWindAngleTrueGround AS angle,
@@ -423,13 +423,14 @@ registerWithRouter: function(router) {
       WHERE environmentWindSpeedApparent < ?
       AND  environmentWindSpeedApparent > ?
       GROUP BY environmentWindAngleTrueGround
-      ORDER BY ABS(environmentWindAngleTrueGround)`, windspeed, windspeed - interval, function(err, rows){
+      ORDER BY ABS(environmentWindAngleTrueGround)`, windspeed + interval, windspeed - interval, function(err, rows){
 
         // error will be an Error if one occurred during the query
         if(err){
           debug("registerWithRouter error: " + err.message);
         }
         res.send(JSON.stringify(rows))
+        //console.log("select found " + rows.length + " between " + (windspeed + interval) + " and " + (windspeed - interval));
       }
     )
   })
@@ -490,7 +491,7 @@ function getTarget(app, trueWindSpeed, windInterval, trueWindAngle, twaInterval,
     WHERE environmentWindSpeedApparent < ?
     AND environmentWindSpeedApparent > ?
     ORDER BY performanceVelocityMadeGood
-    DESC`, trueWindSpeed, trueWindSpeed - windInterval, function(err, row){
+    DESC`, trueWindSpeed + windInterval, trueWindSpeed - windInterval, function(err, row){
       // error will be an Error if one occurred during the query
       if(err){
         debug("tack error: " + err.message);
@@ -515,7 +516,7 @@ function getTarget(app, trueWindSpeed, windInterval, trueWindAngle, twaInterval,
     WHERE environmentWindSpeedApparent < ?
     AND environmentWindSpeedApparent > ?
     ORDER BY performanceVelocityMadeGood
-    ASC`, trueWindSpeed, trueWindSpeed - windInterval, function(err, row){
+    ASC`, trueWindSpeed + windInterval, trueWindSpeed - windInterval, function(err, row){
 
       // error will be an Error if one occurred during the query
       if(err){
