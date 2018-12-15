@@ -61,7 +61,7 @@ module.exports = function(app, options) {
         if(update.values && typeof update.source != 'undefined' && (update.source.talker != 'signalk-polar')) {
 
           var points = update.values.reduce((acc, pathValue, options) => {
-console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
+//console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
             if(typeof pathValue.value === 'number') {//propulsion.*.state is not number!
               var storeIt = shouldStore(pathValue.path);
 
