@@ -24,7 +24,7 @@ const sqlite3 = require('sqlite3');
 var db,json;
 var pushInterval;
 
-var vmg, rot, stw, awa, twa, aws, tws, eng, sog, cog, tack;
+var vmg = 0, rot = 180, stw = 0, awa = 0, twa = 0, aws = 0, tws = 0, eng = 0, sog = 0, cog = 0, tack="port";
 var engineRunning = true;
 var engineSKPath = "";
 var rateOfTurnLimit
@@ -61,7 +61,7 @@ module.exports = function(app, options) {
         if(update.values && typeof update.source != 'undefined' && (update.source.talker != 'signalk-polar')) {
 
           var points = update.values.reduce((acc, pathValue, options) => {
-console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
+// console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
             if(typeof pathValue.value === 'number') {//propulsion.*.state is not number!
               var storeIt = shouldStore(pathValue.path);
 
@@ -137,14 +137,13 @@ console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
                 if (Math.abs(rot*3437) < rateOfTurnLimit){stableCourse = true;
                 }
                 else stableCourse = false;
-                console.log("stable course? " + stableCourse +" "+ Math.abs(rot*3437) + " deg/min compared to " + rateOfTurnLimit);
+		const MPS_PER_KNOT = 1852 / 3600; // meters per second in 1 knot
 
-                const MPS_PER_KNOT = 1852 / 3600; // meters per second in 1 knot
                 if (timediff < maxInterval && !engineRunning  && stableCourse && lastStored < timeMax - 1 && 
-	            2*MPS_PER_KNOT <= navigationSpeedThroughWater && 
-		    ((environmentWindSpeedApparent % 5) <= 0.2 || (environmentWindSpeedApparent % 5) >= 4.8))
+	            2*MPS_PER_KNOT <= stw && 
+		    ((aws % 5) <= 0.2 || (aws % 5) >= 4.8))
 	        {
-                  console.log("sailing")
+                  //console.log("sailing")
                   if (timeMax - twaTimeSeconds > 1){
                     twa = getTrueWindAngle(stw, tws, aws, awa);
                   }
@@ -155,62 +154,23 @@ console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
                     vmg = getVelocityMadeGood(stw, twa);
                   }
 
-                 /*if (secondsSincePush < timeMax - 1){
-                    pushDelta(app,  {"key": "environment.wind.speedTrue", "value": tws});
-                    pushDelta(app,  {"key": "environment.wind.angleTrueWater", "value": twa});
-                    pushDelta(app,  {"key": "performance.velocityMadeGood", "value": vmg});
-                    secondsSincePush = timeMax;
-                  }*/
                   //tack is implicit in wind angle, no need to check (or store)
                   //but check if rot between limits -5deg/min < rot < 5deg/min
                   
                  // debug(`SELECT * FROM polar Where environmentWindSpeedTrue <= `+ tws + ` AND environmentWindAngleTrueGround = ` + twa + ` AND navigationSpeedThroughWater >= `+ stw )
-	          console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
-		  db.get('INSERT OR IGNORE INTO polar (timestamp, environmentWindSpeedApparent, environmentWindSpeedTrue, environmentWindAngleApparent, environmentWindAngleTrueGround, performanceVelocityMadeGood, tack, navigationSpeedThroughWaterSum,navigationSpeedThroughWaterCount) VALUES(?, ?, ?, ?, ?, ?, ?, ?, 1)', timeMaxIso, aws, tws, awa, twa, vmg, tack, stw);
-
-		  db.get('UPDATE polar SET navigationSpeedThroughWaterCount = navigationSpeedThroughWaterCount + 1 , navigationSpeedThroughWaterSum = navigationSpeedThroughWaterSum + ?, timestamp = ?, environmentWindSpeedTrue = ?, environmentWindAngleTrueGround = ?, performanceVelocityMadeGood = ?, tack = ? WHERE  environmentWindAngleApparent = ? AND  environmentWindSpeedApparent = ?',stw,timeMaxIso,tws,twa,vmg, tack,aws, awa);
-                 /* db.get(`SELECT * FROM polar
-                    Where environmentWindSpeedApparent = ?
-                    AND environmentWindAngleApparent = ?
-                    AND navigationSpeedThroughWater >= ?` ,aws, awa, stw, (err,row) => {
-
-                  if(err){
-                    debug(err)
-                    return debug(err)
-		    }
-
-                  debug("response type: " + typeof (row))
-                  if(typeof row !== 'object' || row.navigationSpeedThroughWater === 'undefined') {
-                    //no better performance found from history
-                    debug("time to update")
-                    if (awa < 0) {
-                      tack = "port";
-                    }
-                    else {
-                      tack = "starboard";
-                    }
-
-                    var timeMaxIso = new Date(timeMax*1000).toISOString()
-
-		    db.get(`INSERT INTO polar
-                      (timestamp, environmentWindSpeedApparent, environmentWindSpeedTrue, environmentWindAngleApparent, environmentWindAngleTrueGround, navigationSpeedThroughWater, performanceVelocityMadeGood, tack)
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, timeMaxIso, aws, tws, awa, twa, stw, vmg, tack, function(err,row){
-                    if(err) {
-                          debug(err);
-                          app.setProviderError(err)
-                        }
-
-                    else {
-
-                      debug("New entry written to db")
-                      app.setProviderStatus("writing to db")
-                    }
-                  });
-                } else {
-                  debug('Data received from db, stw: ' + row.navigationSpeedThroughWater)
-                }
-                return
-              });*/
+		  var timeMaxIso = new Date(timeMax*1000).toISOString()
+		  db.get(`INSERT INTO polar (timestamp, environmentWindSpeedApparent, environmentWindSpeedTrue, environmentWindAngleApparent, environmentWindAngleTrueGround, performanceVelocityMadeGood, tack, navigationSpeedThroughWaterSum, navigationSpeedThroughWaterCount) VALUES('${timeMaxIso}', ${aws}, ${tws}, ${awa}, ${twa}, ${vmg}, '${tack}', ${stw}, 1) ON CONFLICT (environmentWindAngleApparent, environmentWindSpeedApparent) DO UPDATE SET timestamp='${timeMaxIso}', navigationSpeedThroughWaterSum = navigationSpeedThroughWaterSum + '${stw}', navigationSpeedThroughWaterCount = navigationSpeedThroughWaterCount + 1`, (err,row) => {
+		  	if (err)
+			{
+				console.log("Error inserting polar record " + err);
+				app.setProviderError(err);
+			}
+			else
+		        {
+				// console.log(update.timestamp + " update db success");
+			}
+		  }
+		  );
             }
           }
         }
