@@ -61,7 +61,7 @@ module.exports = function(app, options) {
         if(update.values && typeof update.source != 'undefined' && (update.source.talker != 'signalk-polar')) {
 
           var points = update.values.reduce((acc, pathValue, options) => {
-//console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
+console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
             if(typeof pathValue.value === 'number') {//propulsion.*.state is not number!
               var storeIt = shouldStore(pathValue.path);
 
@@ -115,6 +115,7 @@ module.exports = function(app, options) {
                   vmgTimeSeconds = vmgTime.getTime() / 1000
                   var engTime;
                 }
+//console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
 
 
                 //debug("times: " /*+ rotTimeSeconds + " "*/ + stwTimeSeconds + " " + awaTimeSeconds + " " + engTimeSeconds)
@@ -136,14 +137,14 @@ module.exports = function(app, options) {
                 if (Math.abs(rot*3437) < rateOfTurnLimit){stableCourse = true;
                 }
                 else stableCourse = false;
-                //debug("stable course? " + stableCourse +" "+ Math.abs(rot*3437) + " deg/min compared to " + rateOfTurnLimit)
+                console.log("stable course? " + stableCourse +" "+ Math.abs(rot*3437) + " deg/min compared to " + rateOfTurnLimit);
 
                 const MPS_PER_KNOT = 1852 / 3600; // meters per second in 1 knot
                 if (timediff < maxInterval && !engineRunning  && stableCourse && lastStored < timeMax - 1 && 
 	            2*MPS_PER_KNOT <= navigationSpeedThroughWater && 
 		    ((environmentWindSpeedApparent % 5) <= 0.2 || (environmentWindSpeedApparent % 5) >= 4.8))
 	        {
-                  debug("sailing")
+                  console.log("sailing")
                   if (timeMax - twaTimeSeconds > 1){
                     twa = getTrueWindAngle(stw, tws, aws, awa);
                   }
@@ -154,7 +155,7 @@ module.exports = function(app, options) {
                     vmg = getVelocityMadeGood(stw, twa);
                   }
 
-                  /*if (secondsSincePush < timeMax - 1){
+                 /*if (secondsSincePush < timeMax - 1){
                     pushDelta(app,  {"key": "environment.wind.speedTrue", "value": tws});
                     pushDelta(app,  {"key": "environment.wind.angleTrueWater", "value": twa});
                     pushDelta(app,  {"key": "performance.velocityMadeGood", "value": vmg});
@@ -162,10 +163,13 @@ module.exports = function(app, options) {
                   }*/
                   //tack is implicit in wind angle, no need to check (or store)
                   //but check if rot between limits -5deg/min < rot < 5deg/min
+                  
+                 // debug(`SELECT * FROM polar Where environmentWindSpeedTrue <= `+ tws + ` AND environmentWindAngleTrueGround = ` + twa + ` AND navigationSpeedThroughWater >= `+ stw )
+	          console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
+		  db.get('INSERT OR IGNORE INTO polar (timestamp, environmentWindSpeedApparent, environmentWindSpeedTrue, environmentWindAngleApparent, environmentWindAngleTrueGround, performanceVelocityMadeGood, tack, navigationSpeedThroughWaterSum,navigationSpeedThroughWaterCount) VALUES(?, ?, ?, ?, ?, ?, ?, ?, 1)', timeMaxIso, aws, tws, awa, twa, vmg, tack, stw);
 
-                  //debug(`SELECT * FROM polar Where environmentWindSpeedTrue <= `+ tws + ` AND environmentWindAngleTrueGround = ` + twa + ` AND navigationSpeedThroughWater >= `+ stw )
-
-                  db.get(`SELECT * FROM polar
+		  db.get('UPDATE polar SET navigationSpeedThroughWaterCount = navigationSpeedThroughWaterCount + 1 , navigationSpeedThroughWaterSum = navigationSpeedThroughWaterSum + ?, timestamp = ?, environmentWindSpeedTrue = ?, environmentWindAngleTrueGround = ?, performanceVelocityMadeGood = ?, tack = ? WHERE  environmentWindAngleApparent = ? AND  environmentWindSpeedApparent = ?',stw,timeMaxIso,tws,twa,vmg, tack,aws, awa);
+                 /* db.get(`SELECT * FROM polar
                     Where environmentWindSpeedApparent = ?
                     AND environmentWindAngleApparent = ?
                     AND navigationSpeedThroughWater >= ?` ,aws, awa, stw, (err,row) => {
@@ -188,9 +192,9 @@ module.exports = function(app, options) {
 
                     var timeMaxIso = new Date(timeMax*1000).toISOString()
 
-                    db.get(`INSERT INTO polar
+		    db.get(`INSERT INTO polar
                       (timestamp, environmentWindSpeedApparent, environmentWindSpeedTrue, environmentWindAngleApparent, environmentWindAngleTrueGround, navigationSpeedThroughWater, performanceVelocityMadeGood, tack)
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ? )`, timeMaxIso, aws, tws, awa, twa, stw, vmg, tack, function(err,row){
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, timeMaxIso, aws, tws, awa, twa, stw, vmg, tack, function(err,row){
                     if(err) {
                           debug(err);
                           app.setProviderError(err)
@@ -206,7 +210,7 @@ module.exports = function(app, options) {
                   debug('Data received from db, stw: ' + row.navigationSpeedThroughWater)
                 }
                 return
-              });
+              });*/
             }
           }
         }
@@ -319,14 +323,17 @@ module.exports = function(app, options) {
 
       db.run(`CREATE TABLE IF NOT EXISTS polar (
         timestamp TEXT,
-        environmentWindSpeedApparent DOUBLE DEFAULT NULL,
+        environmentWindSpeedApparent DOUBLE DEFAULT NULL ,
         environmentWindSpeedTrue DOUBLE DEFAULT NULL,
         environmentWindAngleApparent DOUBLE DEFAULT NULL,
         environmentWindAngleTrueGround DOUBLE DEFAULT NULL,
-        navigationSpeedThroughWater DOUBLE DEFAULT NULL,
+        navigationSpeedThroughWaterSum DOUBLE DEFAULT NULL,
+	navigationSpeedThroughWaterCount INTEGER DEFAULT 1,
         performanceVelocityMadeGood DOUBLE DEFAULT NULL,
         tack TEXT,
-        navigationRateOfTurn DOUBLE DEFAULT NULL)`);
+        navigationRateOfTurn DOUBLE DEFAULT NULL,
+        PRIMARY KEY(environmentWindAngleApparent,environmentWindSpeedApparent)
+        )`);
 
         if(options.entered && options.entered.length > 0 ){
           options.entered.forEach(table => {
@@ -372,11 +379,11 @@ module.exports = function(app, options) {
             })
             // delete all user entered polars
           }
-          pushInterval = setInterval(function() {
+         /* pushInterval = setInterval(function() {
             //debug("tws: " + tws + " abs twa: " + Math.abs(twa) + " stw: " + stw)
             getTarget(app, tws, twsInterval, Math.abs(twa), twaInterval, stw);
             //debug("sent to setInterval:" +  tws + " : " + twsInterval + " : " + Math.abs(twa) + " : " + twaInterval);
-          }, 1000);
+          }, 1000);*/
 
           debug("started");
 
@@ -419,7 +426,7 @@ module.exports = function(app, options) {
             var table = req.query.table?req.query.table:"polar" //"polar" is default db
 
             db.all(`SELECT environmentWindAngleApparent AS angle,
-              MAX(navigationSpeedThroughWater) AS speed
+              MAX(navigationSpeedThroughWaterSum/navigationSpeedThroughWaterCount) AS speed
               FROM ${table}
               WHERE environmentWindSpeedApparent < ?
               AND  environmentWindSpeedApparent > ?
