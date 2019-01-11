@@ -24,7 +24,7 @@ const sqlite3 = require('sqlite3');
 var db,json;
 var pushInterval;
 
-var vmg = 0, rot = 180, stw = 0, awa = 0, twa = 0, aws = 0, tws = 0, eng = 0, sog = 0, cog = 0, tack="port";
+var vmg = 0, rot = 0, stw = 0, awa = 0, twa = 0, aws = 0, tws = 0, eng = 0, sog = 0, cog = 0, tack="port";
 var engineRunning = true;
 var engineSKPath = "";
 var rateOfTurnLimit
@@ -113,7 +113,20 @@ module.exports = function(app, options) {
                   vmg = pathValue.value;
                   var vmgTime = new Date(update.timestamp);
                   vmgTimeSeconds = vmgTime.getTime() / 1000
-                  var engTime;
+                }
+		
+		var engTime;
+                if (engineSKPath != "AlwaysOff"){
+                  if (pathValue.path == engineSKPath){
+                    engTime = new Date(update.timestamp);
+                    engTimeSeconds = engTime.getTime() / 1000;
+                    eng = pathValue.value;
+                  }
+                }
+                else {
+                  engTime = new Date(update.timestamp); //take the last timestamp
+                  engTimeSeconds = engTime.getTime() / 1000;
+		  eng = 0;
                 }
 //console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
 
@@ -128,22 +141,29 @@ module.exports = function(app, options) {
 
                 if ((engineSKPath.indexOf(".state") > -1) && (eng != '[object Object]' && eng != 'started')){
                   engineRunning = true;
-                } else if ((engineSKPath.indexOf(".revolutions") > -1 ) && (eng <= 1)){ //RPM = 0
+                } else if ((engineSKPath.indexOf(".revolutions") > -1 ) && (eng > 0)){ //RPM > 0
                   engineRunning = true;
                 } else {
                   engineRunning = false;
                 }
-                //debug("engine running? " + engineRunning)
                 if (Math.abs(rot*3437) < rateOfTurnLimit){stableCourse = true;
                 }
                 else stableCourse = false;
 		const MPS_PER_KNOT = 1852 / 3600; // meters per second in 1 knot
 
-                if (timediff < maxInterval && !engineRunning  && stableCourse && lastStored < timeMax - 1 && 
-	            2*MPS_PER_KNOT <= stw && 
-		    ((aws % 5) <= 0.2 || (aws % 5) >= 4.8))
+		var awsKn = Math.round(aws/MPS_PER_KNOT*10) / 10;
+		if (lastStored < timeMax - 1)
+		{
+		  console.log("timediff=" + timediff + " engineRunning=" + engineRunning + " stableCourse=" + stableCourse + " stw(kn)=" + Math.round(stw / MPS_PER_KNOT * 10) / 10 + " awsKn=" + awsKn);
+		}
+
+                if (timediff < maxInterval && !engineRunning && stableCourse && 
+lastStored < timeMax - 1 && 
+	            0.5*MPS_PER_KNOT <= stw && 
+		    ((awsKn % 1) <= 0.2 || (awsKn % 1) >= 0.8)
+)
 	        {
-                  //console.log("sailing")
+                  console.log("sailing")
                   if (timeMax - twaTimeSeconds > 1){
                     twa = getTrueWindAngle(stw, tws, aws, awa);
                   }
@@ -167,12 +187,13 @@ module.exports = function(app, options) {
 			}
 			else
 		        {
+				lastStored = timeMax;
 				// console.log(update.timestamp + " update db success");
 			}
 		  }
 		  );
-            }
-          }
+                }
+              }
         }
         return acc;
       }, []);
