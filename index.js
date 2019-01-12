@@ -164,12 +164,14 @@ lastStored < timeMax - 1 &&
 )
 	        {
                   console.log("sailing")
-                  if (timeMax - twaTimeSeconds > 1){
+                  
+		  // not sure why compute this. raymarine reports it from the instrument.
+		  /*if (timeMax - twaTimeSeconds > 1){
                     twa = getTrueWindAngle(stw, tws, aws, awa);
                   }
                   if(timeMax - twsTimeSeconds > 1){
                     tws = getTrueWindSpeed(stw, aws, awa);
-                  }
+                  }*/
                   if (timeMax - vmgTimeSeconds > 1){
                     vmg = getVelocityMadeGood(stw, twa);
                   }
@@ -407,7 +409,7 @@ lastStored < timeMax - 1 &&
             var table = req.query.table?req.query.table:"polar" //"polar" is default db
 
             db.all(`SELECT environmentWindAngleApparent AS angle,
-              MAX(navigationSpeedThroughWaterSum/navigationSpeedThroughWaterCount) AS speed
+              SUM(navigationSpeedThroughWaterSum)/SUM(navigationSpeedThroughWaterCount) AS speed
               FROM ${table}
               WHERE environmentWindSpeedApparent < ?
               AND  environmentWindSpeedApparent > ?
