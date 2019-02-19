@@ -35,7 +35,11 @@ var stableCourse = false;
 var vmgTimeSeconds = rotTimeSeconds = stwTimeSeconds = twaTimeSeconds = twsTimeSeconds = vmgTimeSeconds = awaTimeSeconds = awsTimeSeconds = engTimeSeconds = cogTimeSeconds = sogTimeSeconds = 0
 var lastStored = 1
 var secondsSincePush
-
+var awaBucketRadian=Math.PI/36;
+var windAngleQue=[];
+var windAngleQueMax=10;
+var updateCount= 0;
+var awaHistogram=Array.from(Array((Math.PI*2/awaBucketRadian)), () => 0);
 const items = [
   "performance.velocityMadeGood", // if empty, populate from this plugin
   "navigation.rateOfTurn", // if above threshold, vessel is turning and no data is stored
@@ -78,12 +82,28 @@ module.exports = function(app, options) {
                   var stwTime = new Date(update.timestamp);
                   stwTimeSeconds = stwTime.getTime() / 1000;
                   stw = pathValue.value;
+	          
                 }
                 if (pathValue.path == "environment.wind.angleApparent"){
-                  var awaTime = new Date(update.timestamp);
-                  awaTimeSeconds = awaTime.getTime() / 1000;
-                  awa = pathValue.value;
-                }
+                  //var awaTime = new Date(update.timestamp);
+                  //awaTimeSeconds = awaTime.getTime() / 1000;
+               	  awa = pathValue.value;
+       		  var tackAngle =(awa+Math.PI);                "/Math.PI*180"
+                  var bucketIndex=Math.trunc(tackAngle/awaBucketRadian);
+		  awaHistogram[bucketIndex]++;
+		  windAngleQue.unshift(bucketIndex);
+                  updateCount++;
+		  if (windAngleQue.length >  windAngleQueMax){
+                    var finPos=windAngleQue[windAngleQue.length-1];
+		    awaHistogram[finPos]--;
+ 		    windAngleQue.pop(windAngleQue.length- 1);
+                    awa = Math.atan2(
+                          windAngleQue.reduce(function(total, num){return total+Math.sin(num * awaBucketRadian - Math.PI)}, 0),
+                          windAngleQue.reduce(function(total, num){return total+Math.cos(num * awaBucketRadian - Math.PI)}, 0));
+		    var awaTime = new Date(update.timestamp);
+		    awaTimeSeconds = awaTime.getTime() / 1000;
+                  }
+		 }	
                 if (pathValue.path == "environment.wind.angleTrueGround"){
                   twa = pathValue.value;
                   var twaTime = new Date(update.timestamp);
@@ -127,17 +147,16 @@ module.exports = function(app, options) {
                   engTime = new Date(update.timestamp); //take the last timestamp
                   engTimeSeconds = engTime.getTime() / 1000;
 		  eng = 0;
-                }
+                }      
 //console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
 
 
                 //debug("times: " /*+ rotTimeSeconds + " "*/ + stwTimeSeconds + " " + awaTimeSeconds + " " + engTimeSeconds)
                 //debug("rot: " +rot + " stw: " + stw + " awa: " + awa+ " eng: " + eng)
-                var timeMax = Math.max(/*rotTimeSeconds,*/ stwTimeSeconds, awaTimeSeconds, awsTimeSeconds, cogTimeSeconds);
-                var timeMin = Math.min(/*rotTimeSeconds,*/ stwTimeSeconds, awaTimeSeconds, awsTimeSeconds, cogTimeSeconds);
+                var timeMax = Math.max(/*rotTimeSeconds,*/ stwTimeSeconds, awaTimeSeconds, awsTimeSeconds);//, cogTimeSeconds);
+                var timeMin = Math.min(/*rotTimeSeconds,*/ stwTimeSeconds, awaTimeSeconds, awsTimeSeconds);//, cogTimeSeconds);
                 var timediff = timeMax - timeMin; //check that values are fairly concurrent
                 //debug("time diff " + timediff)
-
 
                 if ((engineSKPath.indexOf(".state") > -1) && (eng != '[object Object]' && eng != 'started')){
                   engineRunning = true;
@@ -156,7 +175,6 @@ module.exports = function(app, options) {
 		{
 		  console.log("timediff=" + timediff + " engineRunning=" + engineRunning + " stableCourse=" + stableCourse + " stw(kn)=" + Math.round(stw / MPS_PER_KNOT * 10) / 10 + " awsKn=" + awsKn);
 		}
-
                 if (timediff < maxInterval && !engineRunning && stableCourse && 
 lastStored < timeMax - 1 && 
 	            0.5*MPS_PER_KNOT <= stw && 
