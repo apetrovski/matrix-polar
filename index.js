@@ -173,7 +173,7 @@ module.exports = function(app, options) {
 		var awsKn = Math.round(aws/MPS_PER_KNOT*10) / 10;
 		if (lastStored < timeMax - 1)
 		{
-		  console.log("timediff=" + timediff + " engineRunning=" + engineRunning + " stableCourse=" + stableCourse + " stw(kn)=" + Math.round(stw / MPS_PER_KNOT * 10) / 10 + " awsKn=" + awsKn);
+//		  console.log("timediff=" + timediff + " engineRunning=" + engineRunning + " stableCourse=" + stableCourse + " stw(kn)=" + Math.round(stw / MPS_PER_KNOT * 10) / 10 + " awsKn=" + awsKn);
 		}
                 if (timediff < maxInterval && !engineRunning && stableCourse && 
 lastStored < timeMax - 1 && 
