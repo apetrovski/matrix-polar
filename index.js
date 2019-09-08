@@ -426,12 +426,16 @@ lastStored < timeMax - 1 &&
             var interval = parseFloat(req.query.interval);
             var table = req.query.table?req.query.table:"polar" //"polar" is default db
 
+            // note excluding common no go angles from -20 to 20 degrees
             db.all(`SELECT environmentWindAngleApparent AS angle,
               SUM(navigationSpeedThroughWaterSum)/SUM(navigationSpeedThroughWaterCount) AS speed
               FROM ${table}
-              WHERE environmentWindSpeedApparent < ?
+              WHERE environmentWindSpeedApparent <= ?
               AND  environmentWindSpeedApparent > ?
-              GROUP BY environmentWindAngleApparent
+	      AND  navigationSpeedThroughWaterCount > 3
+              AND (environmentWindAngleApparent < -0.3491
+	           OR environmentWindAngleApparent > 0.3491)
+	      GROUP BY environmentWindAngleApparent
               ORDER BY ABS(environmentWindAngleApparent)`, windspeed + interval, windspeed - interval, function(err, rows){
 
             // error will be an Error if one occurred during the query

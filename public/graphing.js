@@ -61,7 +61,7 @@ var verticalAlign = "middle";
 var align = "right";
 
 var windSpeed = 5;
-var windRange = 0.2 / 1.9438;
+var windRange = 0.5 / 1.9438;
 
 var nightmode = false;
 var awaBucketDegree=1;
