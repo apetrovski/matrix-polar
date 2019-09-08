@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html style="width:100%; height:100%">
+<head>
+<basefont size="24">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title> - live polar data - </title>
+<script type='text/javascript' src='/jquery/dist/jquery.min.js'></script>
+<!-- <script src="polar.js"></script> -->
+<link rel="stylesheet" type="text/css" href="css/highcharts.css">
+<link rel="stylesheet" type="text/css" href="blah2.css">
+<link rel="stylesheet" type="text/css" href="/bootstrap/dist/css/bootstrap.min.css"> <style type='text/css'></style>
+<body bgcolor="black" font size="24" >
+  <script src="./instruments.js"></script>
+  <script src="./awsInstruments.js"></script>
+  <script src="./sowInstruments.js"></script>
+</head>
+
+<body style="width:100%; height:100%"  >
+  
+  <table style="width:100%; height:100%" >
+  <tr>
+     <td width = "100%"><center><a href="/">Home</a></center></td>
+  </tr>
+  <tr height="33%">
+     <td><div style="width:100%; height:100%" id="container"/></td>
+  </tr>
+  <tr height="33%">
+     <td><div style="width:100%; height:100%" id="container3"/></td>
+  </tr>
+
+  <tr height="33%">
+     <td><div style="width:100%; height:100%" id="container2"/></td> 
+    <td><center><p>Max Wind Speed: <span id="windMaxText"></span></p></center><input type="range" min="0" max="60" value= "5" step="1" class="input-range" id="windMax"> </td>
+
+  </tr>
+  <tr>
+        <td><a href = 'index.html'>Polars<a></td>
+  </tr>
+  
+  <!--p>Value: <span id="windMinText"></span></p>
+  <p>Value: <span id="windStepText"></span></p-->	
+
+  <script src="node_modules/highcharts/highstock.js"></script>
+  <script src="node_modules/highcharts/highcharts-more.js"></script>
+  <script src="node_modules/highcharts/modules/exporting.js"></script>
+  <script src="node_modules/highcharts/modules/histogram-bellcurve.js"></script>
+  
+  <script type="text/javascript">
+  var windMaxSlider = document.getElementById("windMax");
+  var windMaxOutput = document.getElementById("windMaxText");
+  windMaxOutput.innerHTML = windMaxSlider.value;
+
+  windMaxSlider.oninput = function() {
+    windMaxOutput.innerHTML = windMaxSlider.value;
+  }
+
+  </script>
+
+	
+  <!--div id="container" style="min-width: 310px; max-width: 800px; height: 600px; margin: 0 auto"></div-->
+
+  <!-- <button id="toggle">Polar/Line chart toggle</button>-->
+  <!-- <button id="night">Night Mode</button> -->
+</body>
+
+
+</html>

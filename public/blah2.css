@@ -1,0 +1,33 @@
+/*element.style{
+    font-size: 100px ;
+}*/
+.input-range {
+    -webkit-appearance: none;
+    height: 80%;
+    border-radius: 5px;
+    background: #ccc;
+    outline: none;
+    writing-mode: bt-lr; /* IE */
+    -webkit-appearance: slider-vertical; /* WebKit */
+    }
+#container {
+    height: 100%;	
+   /* font-size: 24px;*/
+}
+/*.element{
+  font-size : larger;
+}*/
+*
+{
+   font-size : 102% !important;
+}
+button {
+     background:none!important;
+     color: #337ab7 !important;
+     border:none;
+     padding:0!important;
+     font: inherit;
+     /*border is optional*/
+     cursor: pointer;
+
+}
