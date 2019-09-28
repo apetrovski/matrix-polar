@@ -254,7 +254,7 @@ $(function () {
 	  //  setInterval(function  () {
               //var chart = $('#container').highcharts();
               options = chart.options;
-              $.getJSON("/plugins/signalk-polar/polarTable/?windspeed=" + windSpeed  + "&interval=" + windRange, function (json) {
+              $.getJSON("/plugins/matrix-polar/polarTable/?windspeed=" + windSpeed  + "&interval=" + windRange, function (json) {
                 stbPolar.length = 0;
 
                 json.forEach(function(entry) {

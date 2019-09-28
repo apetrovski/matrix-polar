@@ -15,7 +15,7 @@
 
 
 const Bacon = require('baconjs');
-const debug = require('debug')('signalk-polar');
+const debug = require('debug')('matrix-polar');
 const util = require('util');
 const utilSK = require('@signalk/nmea0183-utilities');
 const express = require("express");
@@ -62,7 +62,7 @@ module.exports = function(app, options) {
   function handleDelta(delta, options) {
     if(delta.updates && delta.context === selfContext) {
       delta.updates.forEach(update => {
-        if(update.values && typeof update.source != 'undefined' && (update.source.talker != 'signalk-polar')) {
+        if(update.values && typeof update.source != 'undefined' && (update.source.talker != 'matrix-polar')) {
 
           var points = update.values.reduce((acc, pathValue, options) => {
 // console.log(update.timestamp + " " + pathValue.path + " " + pathValue.value);
@@ -223,8 +223,8 @@ lastStored < timeMax - 1 &&
 
 
   return {
-    id: "signalk-polar",
-    name: "Polar storage and retrieval",
+    id: "matrix-polar",
+    name: "Matrix polar storage and retrieval",
     description: "Signal K server plugin that stores and retrieves polar data from sqlite3 database",
 
     schema: {
@@ -250,7 +250,7 @@ lastStored < timeMax - 1 &&
         sqliteFile: {
           type: "string",
           title: "File for storing sqlite3 data, relative path to server",
-          default: "./polarDatabase.db"
+          default: "./matrixPolarDatabase.db"
         },
         rateOfTurnLimit: {
           type: "number",
@@ -421,7 +421,7 @@ lastStored < timeMax - 1 &&
         registerWithRouter: function(router) {
           router.get('/polarTable', (req, res) => {
             res.contentType('application/json');
-            //debug(util.inspect(req.query)); // http://localhost:3000/plugins/signalk-polar/polarTable/?windspeed=4&interval=0.1
+            //debug(util.inspect(req.query)); // http://localhost:3000/plugins/matrix-polar/polarTable/?windspeed=4&interval=0.1
             var windspeed = parseFloat(req.query.windspeed);
             var interval = parseFloat(req.query.interval);
             var table = req.query.table?req.query.table:"polar" //"polar" is default db
@@ -631,7 +631,7 @@ function pushDelta(app, command_json) {
     context: "vessels." + app.selfId,
     updates: [
       {
-        source: {"type":"server","sentence":"none","label":"calculated","talker":"signalk-polar"},
+        source: {"type":"server","sentence":"none","label":"calculated","talker":"matrix-polar"},
         timestamp: utilSK.timestamp(),
         values: [
           {
