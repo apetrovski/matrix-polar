@@ -137,7 +137,7 @@ module.exports = function(app, options) {
 		
 		var engTime;
                 if (engineSKPath != "AlwaysOff"){
-                  if (pathValue.path == engineSKPath){
+                  if (pathValue.path == engineSKPath && 0 != pathValue.value){
                     engTime = new Date(update.timestamp);
                     engTimeSeconds = engTime.getTime() / 1000;
                     eng = pathValue.value;
@@ -160,7 +160,7 @@ module.exports = function(app, options) {
 
                 if ((engineSKPath.indexOf(".state") > -1) && (eng != '[object Object]' && eng != 'started')){
                   engineRunning = true;
-                } else if ((engineSKPath.indexOf(".revolutions") > -1 ) && (eng > 0)){ //RPM > 0
+                } else if ((engineSKPath.indexOf(".revolutions") > -1 ) && (eng > 0 && timeMin - engTimeSeconds < 30)){ //RPM > 0
                   engineRunning = true;
                 } else {
                   engineRunning = false;

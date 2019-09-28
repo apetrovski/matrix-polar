@@ -244,7 +244,7 @@ $(function () {
                 console.log(e)
                };
            // });
-	}, 1000);
+	}, 5000);
            
   
 	  //update current polar each second
@@ -302,7 +302,7 @@ $(function () {
           test((parseInt(windStepSlider.value)*4+parseInt(windMinSlider.value))/1.9438,4,stbPolar25,4,chart);
           test((parseInt(windStepSlider.value)*5+parseInt(windMinSlider.value))/1.9438,5,stbPolar30,5,chart);
 	  }
-	,10000);
+	,5000);
 	var chart = $('#container').highcharts();
 	chart.setSize(
               $(container).width(),
