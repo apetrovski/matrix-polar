@@ -45,13 +45,12 @@ var polarInited = false;
 var current = [];
 //updated only on refresh:
 var stbPolar = [];
-var polarWind=[1,2,3,4,5,6];
+var polarWind=[1,2,3,4,5];
+var stbPolar1 = [];
+var stbPolar2 = [];
+var stbPolar3 = [];
+var stbPolar4 = [];
 var stbPolar5 = [];
-var stbPolar10 = [];
-var stbPolar15 = [];
-var stbPolar20 = [];
-var stbPolar25 = [];
-var stbPolar30 = [];
 var polar1=[];
 var tackAngle;
 var reachAngle;
@@ -249,10 +248,12 @@ $(function () {
   
 	  //update current polar each second
 	  
-	    function test(windSpeed, seriesStart, stbPolar, polarWindIndex, chart){	
-           //   setInterval(windMinSlider1(),1000);
-	  //  setInterval(function  () {
-              //var chart = $('#container').highcharts();
+	    function updateSeries(windSpeed, seriesStart, stbPolar, polarWindIndex, chart){
+              if (windSpeed<=0){
+                chart.series[seriesStart].setData();
+                chart.series[seriesStart].setName();
+                return
+              }
               options = chart.options;
               $.getJSON("/plugins/matrix-polar/polarTable/?windspeed=" + windSpeed  + "&interval=" + windRange, function (json) {
                 stbPolar.length = 0;
@@ -263,8 +264,7 @@ $(function () {
                     var speedKnots = entry['speed']/1852*3600;
                     //console.log(windDeg + ',' + speedKnots);
                     var polarItem = [windDeg , speedKnots];
-                    stbPolar.push(polarItem); //positive angles                   
-
+                    stbPolar.push(polarItem); //positive angles 
                   }
 
                   if(entry['angle'] < 0){
@@ -288,20 +288,19 @@ $(function () {
             }
 		
 		//, 1000);
-	 setInterval(function(){
+	  setInterval(function(){
 	  // var today = new Date(); 
-           var chart = $('#container').highcharts();
-	   var windMinSlider = document.getElementById("windMin");
-	   var windStepSlider = document.getElementById("step");
+          var chart = $('#container').highcharts();
+	  var windMinSlider = document.getElementById("windMin");
+	  var windStepSlider = document.getElementById("step");
           // var windMinSlider = $('#myRange')[0];
-	  // chart.setTitle(null, {text: windMinSlider.innerHTML +"~"+(today).getSeconds()}); 
-	  test(parseInt(windMinSlider.value)/1.9438,0,stbPolar5,0,chart);       
-          test((parseInt(windStepSlider.value)+parseInt(windMinSlider.value))/1.9438,1,stbPolar10,1,chart);
-          test((parseInt(windStepSlider.value)*2+parseInt(windMinSlider.value))/1.9438,2,stbPolar15,2,chart);
-          test((parseInt(windStepSlider.value)*3+parseInt(windMinSlider.value))/1.9438,3,stbPolar20,3,chart);
-          test((parseInt(windStepSlider.value)*4+parseInt(windMinSlider.value))/1.9438,4,stbPolar25,4,chart);
-          test((parseInt(windStepSlider.value)*5+parseInt(windMinSlider.value))/1.9438,5,stbPolar30,5,chart);
-	  }
+	  // chart.setTitle(null, {text: windMinSlider.innerHTML +"~"+(today).getSeconds()});
+          updateSeries((parseInt(windMinSlider.value)-2*parseInt(windStepSlider.value))/1.9438,0,stbPolar1,0,chart);
+          updateSeries((parseInt(windMinSlider.value)-parseInt(windStepSlider.value))/1.9438,1,stbPolar2,1,chart);
+          updateSeries(parseInt(windMinSlider.value)/1.9438,2,stbPolar3,2,chart);
+          updateSeries((parseInt(windMinSlider.value)+parseInt(windStepSlider.value))/1.9438,3,stbPolar4,3,chart);
+          updateSeries((parseInt(windMinSlider.value)+2*parseInt(windStepSlider.value))/1.9438,4,stbPolar5,4,chart);
+	}
 	,5000);
 	var chart = $('#container').highcharts();
 	chart.setSize(
@@ -421,45 +420,46 @@ $(function () {
     {
       type: 'line',
       name: polarWind[0],
-      data: stbPolar5,
+      data: stbPolar1,
       connectEnds: false,
       turboThreshold: 0,
       marker: false,	    
     }, {
       type: 'line',
       name: polarWind[1],
-      data: stbPolar10,
+      data: stbPolar2,
       connectEnds:false,
       turboThreshold: 0,
-      marker: false,	    
+      marker: false,	   
     }, {
       type: 'line',
       name: polarWind[2],
-      data: stbPolar15,
+      data: stbPolar3,
       connectEnds: false,
       turboThreshold: 0,
       marker: false,
     }, {
       type: 'line',
       name: polarWind[3],
-      data: stbPolar20,
+      data: stbPolar4,
       connectEnds: false,
       turboThreshold: 0,
       marker: false,
-    }, {
+    }, { 
       type: 'line',
       name: polarWind[4],
+      data: stbPolar5,
       connectEnds: false,
       turboThreshold: 0,
       marker: false,
-    }, {
+    },/* {
       type: 'line',
       name: polarWind[5],
       data: stbPolar30,
       connectEnds: false,
       turboThreshold: 0,
       marker: false,	    
-    },{
+    },*/{
       name: ' ',//'Histogram',
       type: 'histogram',
       color: 'rgba(255, 255, 255, 0)',
