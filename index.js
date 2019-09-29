@@ -160,9 +160,12 @@ module.exports = function(app, options) {
 
                 if ((engineSKPath.indexOf(".state") > -1) && (eng != '[object Object]' && eng != 'started')){
                   engineRunning = true;
+                  if (!engineRunning) console.log(engineSKPath + " started");
                 } else if ((engineSKPath.indexOf(".revolutions") > -1 ) && (eng > 0 && timeMin - engTimeSeconds < 30)){ //RPM > 0
+                  if (!engineRunning) console.log(engineSKPath + " started");
                   engineRunning = true;
                 } else {
+                  if (engineRunning) console.log(engineSKPath + " stopped");
                   engineRunning = false;
                 }
                 if (Math.abs(rot*3437) < rateOfTurnLimit){stableCourse = true;
