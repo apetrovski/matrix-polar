@@ -148,14 +148,15 @@ $(function () {
                // var response = await fetch("/signalk/v1/aipi/vessels/self/performance/beatAngle");
                 var response = await fetch("/signalk/v1/api/vessels/self/environment/wind/angleApparent");
                 var x = await response.json();
-                x = JSON.stringify(x.value)
+                x = JSON.stringify(x.value);
                 tackAngle=parseFloat(x);
+		
 		tackAngle = Math.round(tackAngle/Math.PI*180);
 		if(tackAngle < -180){
 			tackAngle = tackAngle+360;
 		}
 		if(tackAngle < 0){
-			tackAngle = tackAngle+360
+			tackAngle = tackAngle+360;
 		}
                 bucketIndex=Math.trunc(tackAngle/awaBucketDegree);
                 awaHistogram[bucketIndex]++;
@@ -167,8 +168,8 @@ $(function () {
                 windAngleQue.pop(windAngleQue.length- 1);
                 }
                 if (updateCount%1==0){
-                        chart.series[7].setData(awaHistogram,false, false, false);
-                        chart.series[6].setData(awaHistogram,true, false, false);
+                        chart.series[6].setData(awaHistogram,false, false, false);
+                        chart.series[5].setData(awaHistogram,true, false, false);
 			avgAwa = Math.atan2(
 				windAngleQue.reduce(function(total, num){return total+Math.sin(num * awaBucketDegree/180*Math.PI)}, 0), 
 				windAngleQue.reduce(function(total, num){return total+Math.cos(num * awaBucketDegree/180*Math.PI)}, 0))/Math.PI*180;
@@ -181,6 +182,7 @@ $(function () {
 
               }catch (e) {
                 console.log("Error updating wind angle histogram")
+		console.log(e)
               }
 	  })(); 
 	  },1000);
