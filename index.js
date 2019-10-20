@@ -435,7 +435,7 @@ lastStored < timeMax - 1 &&
               FROM ${table}
               WHERE environmentWindSpeedApparent <= ?
               AND  environmentWindSpeedApparent > ?
-	      AND  navigationSpeedThroughWaterCount > 3
+	      AND  navigationSpeedThroughWaterCount > 0
               AND (environmentWindAngleApparent < -0.3491
 	           OR environmentWindAngleApparent > 0.3491)
 	      GROUP BY environmentWindAngleApparent
