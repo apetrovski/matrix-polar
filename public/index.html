@@ -11,14 +11,16 @@
         
         function saveCookies()
 	{
+                var d = new Date();
+                d.setTime(d.getTime() + (1024*24*60*60*1000));
+                var expires = "expires="+ d.toUTCString();
 		myCookies["_windMinSlider1"] = document.getElementById("step").value;
 		myCookies["_windStepSlider"] = document.getElementById("windMin").value;
 		myCookies["_polarOrLine"] = document.getElementById("toggle").innerHTML; 
-		document.cookie = "";
 		var cookieString = "";
 		for (var key in myCookies)
 		{
-			cookieString = key + "=" + myCookies[key] + ";";
+			cookieString = key + "=" + myCookies[key] + ";" + expires + ";";
 			document.cookie = cookieString;
 		}
 	}

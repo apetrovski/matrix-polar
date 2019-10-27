@@ -328,7 +328,7 @@ $(function () {
       layout : `${layout}`,
       verticalAlign : `${verticalAlign}`,
       align : `${align}`,
-      symbolHeight: 48,
+      symbolHeight: 20,
       symbolWidth: 48
     },
 
@@ -339,7 +339,11 @@ $(function () {
     },
 
     xAxis:[{
-      tickInterval: 45,
+      tickInterval: 30,
+      tickLength: 10,
+      minorTicks: true,
+      minorTickInterval: 10,
+      minorGridLineWidth: 3,
       min:0,
       max:360,
       labels: {
@@ -381,7 +385,7 @@ $(function () {
       max:360,
       visible: false,
       
-       }],
+     }],
 
     yAxis: [{
        // title: { text: 'polarWind[]' }
