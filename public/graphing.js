@@ -70,6 +70,9 @@ var avgAwa = 0;
 var updateCount=0;
 var awaHistogram=Array.from(Array((360/awaBucketDegree)), () => 0);
 
+var lastWindMid = 15;
+var lastWindStep = 1;
+
 console.log(awaHistogram);
 function getWind() {
   (async() => {
@@ -282,8 +285,8 @@ $(function () {
 		stbPolar.push([0 , 0])      
 		stbPolar.sort(function(a,b){return a[0] - b[0]; });      
                 chart.series[seriesStart].setData(stbPolar,true);
-                chart.series[seriesStart].setName(polarWind[polarWindIndex],true) 
                 polarWind[polarWindIndex]=windSpeed*1.9438;
+                chart.series[seriesStart].setName(polarWind[polarWindIndex],true) 
                 options = chart.options;
               });
 		  
@@ -295,15 +298,19 @@ $(function () {
           var chart = $('#container').highcharts();
 	  var windMinSlider = document.getElementById("windMin");
 	  var windStepSlider = document.getElementById("step");
-          // var windMinSlider = $('#myRange')[0];
-	  // chart.setTitle(null, {text: windMinSlider.innerHTML +"~"+(today).getSeconds()});
-          updateSeries((parseInt(windMinSlider.value)-2*parseInt(windStepSlider.value))/1.9438,0,stbPolar1,0,chart);
-          updateSeries((parseInt(windMinSlider.value)-parseInt(windStepSlider.value))/1.9438,1,stbPolar2,1,chart);
-          updateSeries(parseInt(windMinSlider.value)/1.9438,2,stbPolar3,2,chart);
-          updateSeries((parseInt(windMinSlider.value)+parseInt(windStepSlider.value))/1.9438,3,stbPolar4,3,chart);
-          updateSeries((parseInt(windMinSlider.value)+2*parseInt(windStepSlider.value))/1.9438,4,stbPolar5,4,chart);
+          if (windMinSlider.value != lastWindMid || windStepSlider.value != lastWindStep) {
+            lastWindMid = windMinSlider.value;
+            lastWindStep = windStepSlider.value;
+            // var windMinSlider = $('#myRange')[0];
+	    // chart.setTitle(null, {text: windMinSlider.innerHTML +"~"+(today).getSeconds()});
+            updateSeries((parseInt(windMinSlider.value)-2*parseInt(windStepSlider.value))/1.9438,0,stbPolar1,0,chart);
+            updateSeries((parseInt(windMinSlider.value)-parseInt(windStepSlider.value))/1.9438,1,stbPolar2,1,chart);
+            updateSeries(parseInt(windMinSlider.value)/1.9438,2,stbPolar3,2,chart);
+            updateSeries((parseInt(windMinSlider.value)+parseInt(windStepSlider.value))/1.9438,3,stbPolar4,3,chart);
+            updateSeries((parseInt(windMinSlider.value)+2*parseInt(windStepSlider.value))/1.9438,4,stbPolar5,4,chart);
+          }
 	}
-	,5000);
+	,1000);
 	var chart = $('#container').highcharts();
 	chart.setSize(
               $(container).width(),
