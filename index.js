@@ -439,7 +439,7 @@ lastStored < timeMax - 1 &&
               AND (environmentWindAngleApparent < -0.3491
 	           OR environmentWindAngleApparent > 0.3491)
 	      GROUP BY environmentWindAngleApparent
-              ORDER BY ABS(environmentWindAngleApparent)`, windspeed + interval, windspeed - interval, function(err, rows){
+              ORDER BY (environmentWindAngleApparent)`, windspeed + interval, windspeed - interval, function(err, rows){
 
             // error will be an Error if one occurred during the query
             if(err){

@@ -273,7 +273,7 @@ $(function () {
                   }
 
                   if(entry['angle'] < 0){
-                    var windDeg = (entry['angle']/Math.PI*180);
+                    var windDeg = (360 + entry['angle']/Math.PI*180);
                     var speedKnots = entry['speed']/1852*3600;
                    // console.log(windDeg + ',' + speedKnots);
                     var polarItem = [windDeg , speedKnots];
