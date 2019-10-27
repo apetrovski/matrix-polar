@@ -481,7 +481,7 @@ $(function () {
       //data: [],
       //stacking: 'percent'
     },{
-      name: 'awa histogram',
+      name: 'awa',
       type: 'histogram',
       color: 'red',
       yAxis: 1,
